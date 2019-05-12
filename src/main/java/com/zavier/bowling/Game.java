@@ -1,16 +1,13 @@
 package com.zavier.bowling;
 
 public class Game {
-    private int score;
-    private int[] throwss = new int[21];
-    private int currentThrow = 0;
-
     private int currentFrame = 1;
     private boolean isFirstThrow = true;
 
+    private Scorer scorer = new Scorer();
 
     public int getScore() {
-        return getScoreForFrame(currentFrame);
+        return getScoreForFrame(getCurrentFrame());
     }
 
     public int getCurrentFrame() {
@@ -18,46 +15,35 @@ public class Game {
     }
 
     public void add(int pins) {
-        throwss[currentThrow++] = pins;
-        score += pins;
+        scorer.addThrow(pins);
         adjustCurrentFrame(pins);
     }
 
     private void adjustCurrentFrame(int pins) {
-        if (isFirstThrow) {
-            if (pins == 10) {
-                currentFrame++;
-            } else {
-                isFirstThrow = false;
-            }
+        if (isLastBallInFrame(pins)) {
+            advanceFrame();
         } else {
-            isFirstThrow = true;
-            currentFrame++;
+            isFirstThrow = false;
         }
+    }
 
+    private boolean isLastBallInFrame(int pins) {
+        return isStrike(pins) || (!isFirstThrow);
+    }
+
+    private boolean isStrike(int pins) {
+        return isFirstThrow && pins == 10;
+    }
+
+    private void advanceFrame() {
+        currentFrame++;
         if (currentFrame > 10) {
             currentFrame = 10;
         }
     }
 
     public int getScoreForFrame(int theFrame) {
-        int ball = 0;
-        int score = 0;
-        for (int currentFrame = 0; currentFrame < theFrame; currentFrame++) {
-            int firstThrow = this.throwss[ball++];
-
-            if (firstThrow == 10) {
-                score += 10 + throwss[ball] + throwss[ball + 1];
-            } else {
-                int secondThrow = this.throwss[ball++];
-                int frameScore = firstThrow + secondThrow;
-                if (frameScore == 10) {
-                    score += frameScore + throwss[ball];
-                } else {
-                    score += frameScore;
-                }
-            }
-        }
-        return score;
+        return scorer.scoreForFrame(theFrame);
     }
+
 }
